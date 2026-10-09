@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -20,20 +22,21 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Collection;
 import java.util.List;
 
 @Entity
-@Builder 
-@NoArgsConstructor 
-@AllArgsConstructor 
-@Getter 
-@Setter 
-public class User {
-    
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+public class User implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; 
-    
+    private Long id;
+
     // Core Profile
     private String username;
     private String name;
@@ -44,11 +47,11 @@ public class User {
     private String phoneNo;
 
     // AI & Time-Series Requirements
-    private String timezone;           // Essential for aligning NIRS telemetry to local time
-    private Double baselineEntropy;    // Resting baseline for ML anomaly detection
-    
+    private String timezone; // Essential for aligning NIRS telemetry to local time
+    private Double baselineEntropy; // Resting baseline for ML anomaly detection
+
     // Security & Auditing
-    private String role;               // e.g., "ROLE_USER"
+    private String role; // e.g., "ROLE_USER"
     @CreationTimestamp
     private LocalDateTime createdAt;
     @UpdateTimestamp
@@ -58,6 +61,38 @@ public class User {
     @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Device> devices;
-    
-    // Getters and Setters omitted for brevity
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return mailaddress;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }
